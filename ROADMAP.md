@@ -75,7 +75,7 @@ add OCR, annotations, cross-doc linking).
 
 **Acceptance:** documented benchmark; tag pushed.
 
-## Beyond v1 (post-1.0 polish — currently Phases 2-5)
+## Beyond v1 (post-1.0 polish - currently Phases 2-5)
 
 - OCR for scanned PDFs (Tesseract via Rust)
 - Annotations (highlights, notes per page)
