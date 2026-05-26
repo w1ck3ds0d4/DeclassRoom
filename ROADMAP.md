@@ -1,110 +1,90 @@
-# Roadmap
+# DeclassRoom v1 Roadmap
 
-This document is forward-looking. DeclassRoom has no shipped code yet; the
-phases below describe what the project intends to deliver, in order. Each
-phase ends with something usable on its own.
+## What v1 is
 
-## Phase 1 - PDF import + text-layer search
+A local-first study tool for declassified government document collections
+(CIA Reading Room exports, FOIA dumps, National Archives releases). User
+points at a folder of PDFs; the app indexes them for full-text search,
+supports annotations and cross-document linking.
 
-The minimum useful product: point at a folder of PDFs that already have a
-text layer, get a searchable library.
+## Current state
 
-- Pick a corpus root on first launch.
-- Walk the corpus root, queue every PDF for ingestion.
-- Per-file: open with pdf.js / pdfium, pull each page's text layer, hash the
-  file, write a `documents` row, write per-page rows into `pages`, let the
-  FTS5 triggers populate `pages_fts`.
-- Library view: list documents, show ingestion status, jump to reader.
-- Reader: pdf.js-backed, page jump, zoom, outline.
-- Search: corpus-wide FTS5 with snippet previews, click-through to reader.
+Pre-code. README, ARCHITECTURE, ROADMAP, SECURITY, CONTRIBUTING, COMMERCIAL
+docs exist. Tech stack not yet committed (likely Electron or Tauri with
+SQLite FTS5). No `package.json`, no `src/`, no asset folder. The existing
+ROADMAP outlines 5 phases (Phase 1 = index 1000 PDFs + search; later phases
+add OCR, annotations, cross-doc linking).
 
-Exit criteria: a folder of ~1000 typed PDFs (e.g. a CIA Reading Room export)
-indexes in a reasonable time and is searchable end-to-end.
+## v1 acceptance criteria
 
-## Phase 2 - OCR for scanned docs
+- [ ] App shell chosen and scaffolded (recommend Tauri 2 + React + Vite for
+      footprint and the existing toolchain pattern)
+- [ ] SQLite + FTS5 wired (better-sqlite3 for sync API in sidecar OR sql.js in renderer)
+- [ ] PDF parser: pdfium (via Tauri Rust bindings) OR pdf.js worker for text extraction
+- [ ] "Open folder" flow: user picks a directory, app indexes all PDFs in tree
+- [ ] Index respects per-doc metadata (filename, declassification date, agency) when filename conventions are recognizable
+- [ ] Reader UI: PDF viewer, search-within-doc, search-across-corpus
+- [ ] Search ranking: BM25 via FTS5 with snippet preview
+- [ ] CI gates (tsc, lint, vite build, cargo fmt + clippy + test, tauri build)
+- [ ] Documented "1000 PDFs index in under 5 minutes" benchmark
+- [ ] At least 10 unit tests covering parser + indexer + ranker
+- [ ] v1.0.0 tag after self-use on a CIA Reading Room export
 
-Most of the interesting older releases are scans. Tesseract gets us text.
+## Milestones to v1
 
-- Detect during ingestion when a PDF has no meaningful text layer.
-- Rasterize pages at a configurable DPI; run Tesseract; store the output as
-  if it were a normal text-layer extraction.
-- Mark `has_text_layer = 0` on the document so the UI can show a badge
-  ("OCR'd").
-- Surface OCR failures (timeout, language mismatch) in the library as a
-  per-document warning, not a silent drop.
-- Settings: pick OCR languages, change the rasterization DPI, re-run OCR on
-  a single document.
+### M1. Foundation scaffold (M)
 
-Exit criteria: a folder of scanned, pre-OCR declassified PDFs becomes
-searchable with acceptable accuracy on clean scans.
+- [ ] `flutter create` or `pnpm create tauri-app` (commit to Tauri direction)
+- [ ] App shell with file-open dialog
+- [ ] CI workflow
 
-## Phase 3 - Annotations + tags + collections
+**Acceptance:** `pnpm tauri dev` boots an empty shell with a "Pick folder" button that prints the chosen path.
 
-Now that the corpus is searchable, make it a study tool.
+### M2. PDF parser + indexer (M/L)
 
-- Annotation model in SQLite: highlights, page notes, doc notes.
-- Reader overlay: select text, highlight, note, edit, delete.
-- Tags: free-form, per-document, with autocomplete from existing tags.
-- Collections: named groupings (e.g. "Stargate", "AARO 2024 release"),
-  documents can belong to multiple.
-- Library filters by tag and collection; search filters likewise.
+- [ ] Choose between pdfium (Rust) and pdf.js (JS)
+- [ ] Text extraction: per-page text + page numbers + line layout (for snippet preview)
+- [ ] Bulk indexer with progress UI
+- [ ] FTS5 schema: `documents`, `pages`, `pages_fts`
+- [ ] Tests on a curated 10-PDF fixture
 
-Exit criteria: a user can sit down with a release like the JFK records,
-group documents into collections, tag them by subject, and leave per-page
-notes that survive a restart.
+**Acceptance:** "Pick folder" -> indexer runs, progress bar updates, search returns hits.
 
-## Phase 4 - Cross-document linking + citation export
+### M3. Reader UI (M)
 
-The thing that distinguishes a study tool from a viewer: links between
-documents and citation export.
+- [ ] PDF viewer (pdf.js render or platform native)
+- [ ] Search bar with results list (doc name + page + snippet)
+- [ ] Click result -> jump to page, highlight matches
+- [ ] Search within current doc
 
-- Cross-doc link model: source doc + source page + selection rectangle ->
-  destination doc + destination page, with an optional note.
-- Reader shows inbound links per page ("referenced from N other documents").
-- A simple graph view of links within a collection.
-- Export: pull annotations and links out as BibTeX, CSL JSON, or markdown,
-  written to `<app_data>/declassroom/exports/`.
+**Acceptance:** user can find a phrase across the corpus and land on the exact page.
 
-Exit criteria: a user can build a chain of "this report cites this earlier
-report cites this primary source", click through it in the reader, and
-export the chain as a citation block.
+### M4. Metadata recognition (S)
 
-## Phase 5 - Import wizards for public dumps
+- [ ] Filename-pattern recognizer for common Reading Room / FOIA conventions
+- [ ] Per-doc metadata panel (filename, agency, date if detected)
+- [ ] Filter search by metadata
 
-Make the on-ramp painless for the common public collections.
+**Acceptance:** user can scope search to "CIA, 1985, declassified-by-XYZ" if the filename conveys it.
 
-- CIA Reading Room ZIP wizard: unpack into the corpus root, set the source
-  label, optionally pre-create a collection per CREST category.
-- National Archives release wizard: read the release index, assign titles
-  and source metadata from the index instead of from PDF metadata.
-- FOIA folder wizard: agency + release date + a label, applied to every PDF
-  in the folder.
+### M5. Benchmark + tag (S)
 
-Network policy: each wizard that wants to fetch over the network asks
-explicitly. The default app-wide outbound-network capability stays off.
+- [ ] Run on a 1000-PDF corpus, capture timing
+- [ ] Document in README
+- [ ] Tag `v1.0.0` after personal smoke
 
-Exit criteria: a user with a fresh install can pick "Import CIA Reading
-Room ZIP", point at the file, and have a tagged, labeled, searchable
-collection a few minutes later.
+**Acceptance:** documented benchmark; tag pushed.
 
-## Things explicitly not planned
+## Beyond v1 (post-1.0 polish — currently Phases 2-5)
 
-- Sync across devices. The corpus is whatever you have on disk.
-- A cloud library of pre-indexed documents.
-- A login / account system.
-- An ML summarizer that paraphrases declassified material. The tool is for
-  reading the source documents, not for talking about them.
-- A publishing path back to the internet.
+- OCR for scanned PDFs (Tesseract via Rust)
+- Annotations (highlights, notes per page)
+- Cross-document linking (citations, redaction patterns)
+- Tag system + saved searches
+- Export annotated set to PDF
 
-## Known open questions
+## Out of scope for v1
 
-- Where to draw the line between "OCR good enough" and "manual transcription
-  needed". For very poor scans (faded, skewed, handwritten margin notes),
-  Tesseract output is sometimes worse than useless.
-- Whether to ship a default tag taxonomy (suggested tags) per common dump,
-  or leave that entirely to the user.
-- How to handle very large single PDFs (some FOIA releases are one 5000-page
-  file). Page-at-a-time ingestion is the plan, but the reader UX for
-  documents that long is its own problem.
-- Whether the graph view for cross-document links is worth the complexity
-  in Phase 4, or whether a flat back-reference list is enough.
+- Cloud sync
+- Multi-user collaboration
+- Public corpus hosting
