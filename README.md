@@ -54,4 +54,7 @@ None of this exists in code yet. This repo is currently the design notes.
 
 ## License
 
-MIT. See [LICENSE](LICENSE). The repo is private while the design is in flux; see [COMMERCIAL.md](COMMERCIAL.md) for the current state.
+This project is dual-licensed:
+
+AGPL v3 - free for open-source use. Derivatives and SaaS deployments must release their source under AGPL.
+Commercial license - for proprietary / closed-source use or hosted services that do not want to comply with AGPL source-disclosure requirements. Contact for terms.

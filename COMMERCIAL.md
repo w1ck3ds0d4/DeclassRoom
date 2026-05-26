@@ -1,37 +1,17 @@
-# Commercial
+# Commercial License
 
-DeclassRoom is MIT-licensed (see [LICENSE](LICENSE)). MIT already permits
-commercial use; there are no additional terms to sign for normal use of the
-code.
+This project is available under the GNU Affero General Public License v3 (see [LICENSE](LICENSE)). The AGPL requires anyone who modifies this software and redistributes it - or runs it as a hosted service - to release their source code under the same license.
 
-This document exists because the repository is currently private and the
-project has no shipped releases yet, so the practical situation for anyone
-who wants to talk about commercial use is "talk to the maintainer first".
-
-## Current posture
-
-- The repository is private.
-- The license is MIT.
-- There is no shipped binary, no hosted service, no support contract.
-- There is no dual-license carve-out; MIT is the only license on the code.
-
-If the project later moves to a different license (e.g. AGPL with a
-commercial alternative, mirroring the related BlueFlame / VeilBreak repos),
-that change will be documented here and will not apply retroactively to
-commits made under MIT.
+If you want to use this project without the AGPL requirements - for example, embedding it in a proprietary product, shipping it inside a closed-source application, or running a commercial SaaS offering without publishing your source - a commercial license is available.
 
 ## Contact
 
-For commercial discussion - bundling DeclassRoom into a product, paid
-support, custom feature work, or pre-release access - reach the maintainer
-directly:
-
-`daniel.svs@outlook.com`
+daniel.svs@outlook.com
 
 Please include:
 
-- Your company or project name.
-- Intended use case.
-- Expected scale (number of users, number of documents, deployment shape).
+- Your company / project name
+- Intended use case
+- Expected scale (users, servers, etc.)
 
-A response typically follows within a few business days.
+A response typically follows within a few business days with license terms and pricing.
